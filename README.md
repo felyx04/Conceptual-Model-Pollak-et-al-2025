@@ -14,7 +14,7 @@ This repository contains all the source code of the models used in Pollak et al.
      - **../Data summary sheet Rohling et al_Reviews of Geophysics 2022-v2.xlsx**: comparison and synthesis of sea-level data by Rohling et al. (2022). Resolution: 1 kyr. Paper: https://doi.org/10.1029/2022RG000775. Data: https://doi.org/10.6084/m9.figshare.21430731.v3
      - **../Orbital_Params_-3,6MA-2MA_1kyr_steps.txt**: orbital parameters used as input for the model: obliquity, precession and co-precession obtained from Laskar et al. (2004) solution. Resolution: 1 kyr. Paper: http://dx.doi.org/10.1051/0004-6361:20041335. Web-interface to download data: https://vo.imcce.fr/insola/earth/online/earth/online/index.php
 
-      - **ConceptualModel/Model**: contains the following conceptual models
+      - **ConceptualModel/Model**: contains the source code for the five different conceptual models used in the paper, namely: ORB, ABR, GRAD, RAMP and RAMP-l
         - **../ORB3_jax.py**: code for tuning the orbital model (**ORB**). Outputs tuned parameters
         - **../ORB3_jax_plot.py**: code for plotting the orbital model (**ORB**). Requires tuned parameters as input
         - **../ABR4_jax.py**: code for tuning the abrupt model (**ABR**). Outputs tuned parameters
