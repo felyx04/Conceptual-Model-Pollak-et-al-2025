@@ -1,0 +1,12 @@
+[workspace]
+restore_data_on_startup = True
+save_data_on_exit = True
+save_history = True
+save_non_project_files = False
+project_type = 'empty-project-type'
+recent_files = ['../../../../.config/spyder-py3/temp.py', 'ABR4_jax_plot.py', 'ABR4_jax.py', 'GRAD2_jax_plot.py', 'GRAD2_jax.py', 'ORB3_jax_plot.py', 'ORB3_jax.py', 'RAMP23_jax_plot.py', 'RAMP23_jax.py', 'RAMP7_jax_plot.py', 'RAMP7_jax.py']
+
+[main]
+version = 0.2.0
+recent_files = []
+
