@@ -24,4 +24,9 @@ This repository contains all the source code of the models used in Pollak et al.
         - **../RAMP7_jax.py**: code for tuning the ramp-like model (**RAMP**). Outputs tuned parameters
         - **../RAMP7_jax_plot.py**: code for plotting the ramp-like model (**RAMP**). Requires tuned parameters as input
         - **../RAMP23_jax.py**: code for tuning the ramp-l model (**RAMP-l**). Outputs tuned parameters
-        - **../RAMP23_jax_plot.py**: code for plotting the ramp-l model (**RAMP-l**). Requires tuned parameters as input 
+        - **../RAMP23_jax_plot.py**: code for plotting the ramp-l model (**RAMP-l**). Requires tuned parameters as input
+
+3. **environment.yml**
+   - contains the conda environment used to run all the code
+   - **Note**: not all packages are necessary, but this is my default environment, that's why there are many additional packages
+   - **Usage**: you can create a new conda environment from this by using `conda env create -f environment.yml` 
