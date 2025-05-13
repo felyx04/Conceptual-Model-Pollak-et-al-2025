@@ -1,5 +1,6 @@
 # Conceptual-Model-Pollak-et-al-2025
-This repository contains all the source code of the models used in Pollak et al. 2025. It also includes all the code and data to generate the figures in this paper.
+This repository contains all the source code of the models used in "_An improved conceptual model of Quaternary global ice volume and
+the Mid-Pleistocene Transition_" (Pollak et al. 2025). It also includes all the code and data to generate the figures in this paper.
 
 # Structure 
 1. **Figures**
