@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Sep  9 10:16:47 2025
+Created on Thu Dec 11 10:33:51 2025
 
 @author: pollakf
 
-Note: - Same as RAMP78_jax_plot.py, but changed names/parametrizations to revised manuscript
+Note: - Same as RAMP97_jax_plot.py, but changed time according to Ganopolski
+      - time runs in phys. units: -2600 -> 0  ; t1 and t2 also negative   ; changed times in ramp
+      - I0(t), v0(t), v1(t) ramp-like (same ramp)
+      - added GMSL (Clark, 2025) and removed ben d18O as targets
       - dropped -1* factor when loading esinw data
       -> this was used in the Legrain et al. model, but it changes sign of the actual esinw data
-      -> new threshold: v*I +v >v0 & v*I > v1
+      -> new threshold: g->d): v*I +v >v0(t) 
+                        d->g): I<I0(t) & v<v1(t)
       - No longer Ik and Ialpha, just one forcing I(t)
       - I(t) = aEsi*Esi + aO*O
       - no alpha_d
       - taud is constant in time
       - co-precession dropped
-      - Added Clark et al. (2025) d18Osw, SL and Probstack (/wo trend) as target
       - Bounds: params: +/- 10_000
-      - 10 params
+      - 13 params
       
 Note2: Runs with float64 precision
        
@@ -46,77 +49,96 @@ import MyModules.tol_colors as tc
 # Berends [-2 Myr - 0]
 ###############################################################################
 
-# StartPosition = (-0.6356483171099399, 0.48453867026034914, 0.8099897084155145, 7.2036984078363275, 140.64093385870865, 6.801738450228356, 21.519710850501042, 52.12031437369467, 1993.0656208112694, 126.82937397402489)
-# RMSE = 12.794855126813353
+# emcee + dynesty
+# StartPosition = (-1, 1, 1, 1, 1, 1, 1, -1200, -800, 1, 1, 1, 1)
+# StartPosition = (-0.43716450887423663, 0.3307099815379785, 0.9771809999630383, 9.515671961740894, 27.187633584065082, 48.67256682719099, 121.32230737342516, -1830.1128391332975, -562.9778341466616, 7426.47937177786, 3253.6001485350744, 10.181307134435361, 14.774082491567363)
+# RMSE = 12.19529585391784
 
 ###############################################################################
 # Berends [-2.6 Myr - 0]
 ###############################################################################
 
-# StartPosition = (-0.5361307492885317, 0.45867720689284397, 0.7691545154076493, 6.919653249321868, 125.11325675182707, 12.655055630582524, 27.111071617329003, -0.34492012852899734, 2290.7633271657164, 546.0857039725839)
-# RMSE = 12.29042588916936
+# emcee + dynesty
+# StartPosition = (-1, 1, 1, 1, 1, 1, 1, -1200, -800, 1, 1, 1, 1)
+# StartPosition = (-0.5090203501048705, 0.45348568853914983, 0.9815494358729182, 10.70514768679791, 27.36049061039328, 37.35138684387872, 131.9837204398457, -2178.920495835071, -463.92646192578957, -0.8342438977028693, 200, 7.9254734180704105, 16.349081614870425)
+# RMSE = 11.956623711758223
 
-# GAP (1.2-0.8)
-# StartPosition = (-0.5506538412424788, 0.4602691945414108, 0.7685889607415675, 6.643603226498271, 123.23109730629506, 11.802818654321982, 27.149880070089466, -0.764080903452907, 2228.295389043347, 966.0617048934067)
-# RMSE = 12.597055158045194
-# RMSE (Gap) = 11.866534063567938
+# Clark solution
+# StartPosition = (-1.136658501233768, 1.258269137570222, 1.7580058627236668, 6.538920642650687, 20.11557982395534, 188.76194902434904, 230.10607314461774, -2134.2316099904683, -745.9521175121465, 22.182319313783374, -0.44150013722874537, 50.5212340318005, 102.36954660799226)
+# StartPosition = (-0.6472767202921449, 0.5061502177013214, 0.7384556821272855, 8.005889496065906, 43.64922399501382, 42.73763448262623, 126.95981458116827, -2050.5488235286552, -818.4711237796465, 8.023351514777714, 0.20851978749302563, 1.9365473822011272, 36.12066141423095)
+# RMSE = 12.504973656349515
 
-###############################################################################
-# Rohling [-2.6 Myr - 0]
-###############################################################################
 
-# StartPosition = (-0.5753596967855401, 0.5397987524648897, 0.7735860962110337, 7.1770424566808515, 144.64490149064397, 17.05617285838605, 27.578641281094747, -0.8701786676130041, 2595.8443618418632, 251.90083845744735)
-# RMSE = 12.737232897311708
-
-###############################################################################
-# Clark d18Osw [-2.6 Myr - 0]
-###############################################################################
-
-#########################
-######## SCALED
-
-# StartPosition = (-0.5448216289606762, 0.5224194602677699, 0.8483130088205826, 4.0869044248956925, 124.59280325140662, 28.38741915333094, -12.372342736330268, 40.50607755094052, 409.5738443781643, 201.81353380225084)
-# RMSE = 0.18908310094261047
-
+# StartPosition = (-0.5884169134374966, 0.5318247545292409, 0.8217986175738236, 7.194732231231515, 38.504040523227296, 42.107975558236696, 142.3857878945521, -2272.7141119990124, -31.239793423460917, 1.613503486041131, 0.11592898666437554, 0.584480971205182, 47.9581056570014)
+# RMSE = 12.005262332490934
 
 ###############################################################################
-# Clark Probstack /wo trend [-2.6 Myr - 0]
+# Berends [-3 Myr - 0]
 ###############################################################################
 
-#########################
-######## SCALED
+# Clark solution
+# StartPosition = (-0.6472767202921449, 0.5061502177013214, 0.7384556821272855, 8.005889496065906, 43.64922399501382, 42.73763448262623, 126.95981458116827, -2050.5488235286552, -818.4711237796465, 8.023351514777714, 0.20851978749302563, 1.9365473822011272, 36.12066141423095)
+# StartPosition = (-0.5957880385234549, 0.5056438714626447, 0.8078423953622473, 8.04230463638938, 7.081004253905572, 16.937266761702492, 140.028292263668, -2969.6973028512934, -25.120338704462668, 2.181900903319734, -0.017490984135115968, -9.753643203344433, 44.85068702753064)
+# RMSE = 11.659358787225045
 
-StartPosition = (-0.5315002385735852, 0.4719065936531024, 0.7597582432412082, 7.060372613489449, 126.97743412997647, 13.695023362743768, 17.0355457240438, -0.6705120847034891, 2242.052517013989, 479.82924790672286)
-# RMSE = 0.21744866659489975
+# 2.6 Myr solution
+# StartPosition = (-0.5884169134374966, 0.5318247545292409, 0.8217986175738236, 7.194732231231515, 38.504040523227296, 42.107975558236696, 142.3857878945521, -2272.7141119990124, -31.239793423460917, 1.613503486041131, 0.11592898666437554, 0.584480971205182, 47.9581056570014)
+# StartPosition = (-0.5906552776301797, 0.5024707574927784, 0.7961382269542748, 8.02793599456681, 9.839366389736236, 15.757935850100315, 135.7744316147947, -2992.2050161664556, -62.71772798023692, 2.239371275475545, 0.003837812858366485, -10.360393440389766, 43.87382534302778)
+# RMSE = 11.656751863427248
 
-# GAP (1.2-0.8)
-# StartPosition = (-1, 1, 1, 1, 1, 1, 1, 1, 1200, 800)
-# StartPosition = (-0.196887699863737, 0.23850110627506638, 0.8961528080715198, 4.368934609277176, 120.75227324132459, 4.102319875835974, 10.118308651612892, -0.40399241625624427, 2344.303592027217, 118.0318340721514)
-# RMSE = 0.22756964798014706
-# RMSE (Gap) = 0.21044267322728102
+###############################################################################
+# Clark GMSL [-2 Myr - 0]
+###############################################################################
 
-# GAP (2-0.6)
-# StartPosition = (-0.1749049557259923, 0.24534355274738573, 0.8444590002856103, 3.8806184502216183, 110.61850461259962, 3.603276051046464, 18.86657917869445, -0.45446122860391824, 2305.556012527472, 784.7190600956967)
-# RMSE = 0.29261536260697346
-# RMSE (Gap) = 0.20503316719512749
+# emcee + dynesty
+# StartPosition = (-1, 1, 1, 1, 1, 1, 1, -1200, -800, 1, 1, 1, 1)
+# StartPosition = (-0.8846463036594662, 0.8099000472630221, 1.7439812872930212, 2.465169838834367, 13.435869534158073, 239.8190978184128, 156.4314606635155, -1017.8989480394566, -920.8289821011772, 6187.411766201387, 1807.2601760067496, 58.20322149912396, 63.946612082213896)
+# RMSE = 28.450392398018348
+
+ 
+# 2.6 Myr solution
+# StartPosition = (-1.1343938917360674, 1.257769829808808, 1.7459735984473355, 6.583527120891631, 19.739059337807475, 187.2822360887286, 228.88535071966464, -2000, -762.0781747874983, 25.98771908505603, -0.5157573150308963, 50.907066558484985, 102.93120460213129)
+# StartPosition = (-1.366234297511774, 1.3236580723856064, 1.7017883885915899, 6.674247054955675, 29.089652104605722, 262.23495534477695, 243.41773973983655, -1941.5159573914977, -766.7305020516261, 24.656845342687614, -0.6149016283510105, 48.45240520806483, 115.4941824677709)
+# RMSE = 27.05899365448409
 
 
 ###############################################################################
-# Clark Probstack /wo trend + start from d state [-2.6 Myr - 0]
+# Clark GMSL [-2.6 Myr - 0]
 ###############################################################################
 
-#########################
-######## SCALED
+# emcee + dynesty
+# StartPosition = (-1, 1, 1, 1, 1, 1, 1, -1200, -800, 1, 1, 1, 1)
+# StartPosition = ()
+# RMSE = 
 
-# StartPosition = (-0.5315002385735852, 0.4719065936531024, 0.7597582432412082, 7.060372613489449, 126.97743412997647, 13.695023362743768, 17.0355457240438, -0.6705120847034891, 2242.052517013989, 479.82924790672286)
-# RMSE = 0.21744866659489975
+# RAMP94 solution
+# StartPosition = (-0.1685305244176334, 0.27761644818542663, 2.1543496440725676, 4.62837207530265, 62.34708494726112, 66.77245762968982, 97.54692000195405, -1370.2408631579362, -796.7048662331799, 1, 1, 1, 1)
+# StartPosition = (-0.55174878981966, 0.697136833290338, 1.6357664609767206, 4.579523054971209, 1.4076788688084536, 186.43506395494632, -498.98136979405206, -993.0933430364157, -671.8527542202517, 138.563314155537, 1.802625469760802, 58.48309054682487, 54.004530674112914)
+# RMSE = 28.984472665410063
+
+# StartPosition = (-0.55174878981966, 0.697136833290338, 1.6357664609767206, 4.579523054971209, 30, 100, 250, -2000, -800, 12, -0.6, 40, 80)
+StartPosition = (-1.1343938917360674, 1.257769829808808, 1.7459735984473355, 6.583527120891631, 19.739059337807475, 187.2822360887286, 228.88535071966464, -2205.7333479176727, -762.0781747874983, 25.98771908505603, -0.5157573150308963, 50.907066558484985, 102.93120460213129)
+# RMSE = 27.69864387774322
 
 
+###############################################################################
+# Clark GMSL [-3 Myr - 0]
+###############################################################################
 
-# Parameters = [aEsi, aO, ag, taud, v02, v1, vi, v01, t1, t2]
-#                0    1    2   3     4    5   6   7    8   9  
+# 2.6 Myr solution
+# StartPosition = (-1.1343938917360674, 1.257769829808808, 1.7459735984473355, 6.583527120891631, 19.739059337807475, 187.2822360887286, 228.88535071966464, -2205.7333479176727, -762.0781747874983, 25.98771908505603, -0.5157573150308963, 50.907066558484985, 102.93120460213129)
+# StartPosition = (-1.3014659840990286, 1.3410580284021443, 1.8314459853094935, 6.275509922825426, 20.723172931128165, 125.16886237361462, 253.32800914338256, -2963.6070318180673, -750.5822044104941, 41.48953451369322, -0.6446180201016881, 12.484529249383387, 128.35323809865585)
+# RMSE = 28.20743049201896
+# StartPosition = (-1.0044228352725213, 1.1886264564724343, 1.8815088426846387, 5.832452149491019, 10.834480132249098, 90.45897876887352, 227.54893987755293, -2792.5280566469587, -783.6206988079153, 37.59163900341491, -0.4284048206986881, 6.985389647858085, 480.8717158200295)
+# RMSE = 28.04970421411239
 
-parameter_names = ['aEsi', 'aO', 'ag', 'taud', 'v02', 'v1', 'vi', 'v01', 't1', 't2']
+
+# Parameters = [aEsi, aO, ag, taud, vi, v01, v02, t1, t2, I01, I02, v11, v12]
+#                0    1    2   3     4   5    6    7   8   9   10   11    12   
+
+parameter_names = ['aEsi', 'aO', 'ag', 'taud', 'vi', 'v01', 'v02', 't1', 't2', 'I01', 'I02', 'v11', 'v12']
+
+
 
    
 # Set resolution of model
@@ -131,23 +153,19 @@ future_time = int(250)
 # Gap included for tuning: Model is not tuned during this time interval. gap=(start_gap[kyr BP], end_gap[kyr BP])
 # gap = (-int(1_200), -int(800)) 
 # gap = (-int(2_000), -int(600)) 
+# gap = (-int(130), -int(0)) 
 gap = None
 
 
 # Set title for Plot
-title = 'RAMP80'
+title = 'RAMP-2'
 
-# Set sea-level data: either Berends, Rohling (LR04 based + tuned age), d18Osw (Clark et al., 2025), 
-#                            SL by Clark et al. (2025)=d18O_sw/0.008, d18O_b (Probstack /wo trend, Clark et al., 2025)
-sea_level_data = 'Clark-probstack'   # options: 'Berends', 'Rohling', 'Clark-d18Osw', 'Clark-SL', 'Clark-probstack'
+# Set sea-level data: either Berends, Rohling (LR04 based + tuned age), Clark (GMSL from Clark et al., 2025), 
+sea_level_data = 'Clark'   # options: 'Berends', 'Rohling', 'Clark'
 
-if sea_level_data=='Berends' or sea_level_data=='Rohling':  
-    scale_to_berends = False   
-else:
-    scale_to_berends = True  # Normalises d18O values and sclaes them to Berends SL for model. Then rescales to d18) values
 
 # save data in binary file with key:value pairs
-# save_data = '../../Figures/Data/RAMP78_2,6Myr_Clark-probstack_Gap-2000-600.pkl'
+# save_data = '../Data/RAMP-2_2,6Myr_Berends.pkl'
 save_data = None
 
 
@@ -218,7 +236,7 @@ def modelledVolume(start_year, future_time, vi, n) :
     print('Step: ', step)
     for i in range(n):
         # current time t
-        t = -1*start_year-(i*sim_time/time_steps)
+        t = start_year + (i*sim_time/time_steps)
         
         # Orbital forcing
         I = aEsi*Esi[2*i] + aO*EnO[2*i]
@@ -226,27 +244,64 @@ def modelledVolume(start_year, future_time, vi, n) :
         # thresholds for state changes (use Esi and EnO at full time steps only)
         test_threshold_gd = v[i]*I + v[i]
         test_threshold_dg = v[i]*I    
+            
+        # ---------------------------------------------------
+        # RAMP for v0(t)
         
-        # t>t1: Before Ramp
-        if t>t1:
+        # t<t1: Before Ramp
+        if t < t1:
             v0_t = v01
             
-        # t2>=t>=t1: Ramp
-        elif t1>=t>=t2:
+        # t1<=t<=t2: Ramp
+        elif t1 <= t <= t2:
             # v0_t = v0 - ((v0-v0_prime)/np.abs(t2-t1)) * np.abs(t-t1) 
             v0_t = v01 + (v02-v01)/(t2-t1) * (t-t1) 
         
-        # t2>t: After Ramp
+        # t2<t: After Ramp
         else:
             v0_t = v02
+            
+        
+        # ---------------------------------------------------
+        # RAMP for I0(t)
+        
+        # t<t1: Before Ramp
+        if t < t1:
+            I0_t = I01
+            
+        # t1<=t<=t2: Ramp
+        elif t1 <= t <= t2:
+            # v0_t = v0 - ((v0-v0_prime)/np.abs(t2-t1)) * np.abs(t-t1) 
+            I0_t = I01 + (I02-I01)/(t2-t1) * (t-t1) 
+        
+        # t2<t: After Ramp
+        else:
+            I0_t = I02
+            
+        # ---------------------------------------------------
+        # RAMP for v1(t)
+        
+        # t<t1: Before Ramp
+        if t < t1:
+            v1_t = v11
+            
+        # t1<=t<=t2: Ramp
+        elif t1 <= t <= t2:
+            # v0_t = v0 - ((v0-v0_prime)/np.abs(t2-t1)) * np.abs(t-t1) 
+            v1_t = v11 + (v12-v11)/(t2-t1) * (t-t1) 
+        
+        # t2<t: After Ramp
+        else:
+            v1_t = v12
+            
         
         if S[0] == "g":
-            if test_threshold_gd>v0_t and test_threshold_dg>v1:
+            if test_threshold_gd>v0_t: 
                 S[0] = "d"
                 S[1] = i
                 
         else :
-            if test_threshold_dg<v1 and test_threshold_gd<v0_t:
+            if I<I0_t and v[i]<v1_t:
                 S[0] = "g"
                 Term_duration = (i-S[1])*sim_time/time_steps #Compute the duration of a termination
                 Term_start = (abs(start_year)-S[1])*sim_time/time_steps #Compute the start of a termination
@@ -288,25 +343,39 @@ def calc_bounds(time_steps, v):
     
     for i in range(time_steps+1):
         # current time t
-        t = -1*start_year-(i*sim_time/time_steps)    
+        t = start_year+(i*sim_time/time_steps)    
         
-        # t>t1: Before Ramp
-        if t>t1:
+        # t<t1: Before Ramp
+        if t < t1:
             v0_t = v01
             
-        # t2>=t>=t1: Ramp
-        elif t1>=t>=t2:
+        # t1<=t<=t2: Ramp
+        elif t1 <= t <= t2:
             # v0_t = v0 - ((v0-v0_prime)/np.abs(t2-t1)) * np.abs(t-t1) 
             v0_t = v01 + (v02-v01)/(t2-t1) * (t-t1) 
         
-        # t2>t: After Ramp
+        # t2<t: After Ramp
         else:
             v0_t = v02
+            
+        # t<t1: Before Ramp
+        if t < t1:
+            v1_t = v11
+            
+        # t1<=t<=t2: Ramp
+        elif t1 <= t <= t2:
+            # v0_t = v0 - ((v0-v0_prime)/np.abs(t2-t1)) * np.abs(t-t1) 
+            v1_t = v11 + (v12-v11)/(t2-t1) * (t-t1) 
+        
+        # t2<t: After Ramp
+        else:
+            v1_t = v12
+            
         
         v0s[i] = v0_t
         v0_bounds[i] = v0s[i] - v[i]*(aEsi*Esi[2*i]+aO*EnO[2*i])
-        v1s[i] = v1
-        v1_bounds[i] = v[i]*(aEsi*Esi[2*i]+aO*EnO[2*i])
+        v1s[i] = v1_t
+        v1_bounds[i] = v[i]
     
     time_bounds = np.arange(-start_year*1e3, -future_time*1e3-1, -resolution)*1e-3
     return (time_bounds, v0s, v0_bounds, v1s, v1_bounds)
@@ -319,7 +388,7 @@ def calc_bounds(time_steps, v):
 # e.g. [2000, ..., -1000] for interval 2Myr BP - 1Myr in future
 def np_interpolation(array, name, resolution, time, start_year=-start_year, future_time=future_time, sea_data='Berends'): 
     if start_year>=3_600 or start_year<0:
-        raise ValueError('start_year must be between 3_599 and 0!')
+        raise ValueError('start_year must be between -3_599 and 0!')
         
     # For interval [<3.6 Myr BP, <=2Myr future]
     # sea data
@@ -339,7 +408,7 @@ def np_interpolation(array, name, resolution, time, start_year=-start_year, futu
                 return (np.flip(new_time), np.flip(new_array))
         
         # default resolution for Rohling and Clark: 1kyr
-        elif sea_data=='Rohling' or sea_data=='Clark-d18Osw' or sea_data=='Clark-SL' or sea_data=='Clark-probstack':
+        elif sea_data=='Rohling' or sea_data=='Clark':
             if resolution==1000:
                 print(f'{sea_data} sea-level data: Resolution set to default. Skipping interpolation step!')
                 return (time, array)  
@@ -353,7 +422,7 @@ def np_interpolation(array, name, resolution, time, start_year=-start_year, futu
                 return (np.flip(new_time), np.flip(new_array))
             
         else: 
-            raise ValueError("sea_level_data must be either 'Berends', 'Rohling', 'Clark-d18Osw', 'Clark-SL', or 'Clark-probstack'!")
+            raise ValueError("sea_level_data must be either 'Berends', 'Rohling' or 'Clark'!")
     
     # orbital data
     else:
@@ -425,12 +494,15 @@ aEsi = StartPosition[0]
 aO = StartPosition[1]
 ag = StartPosition[2]
 taud = StartPosition[3]
-v02 = StartPosition[4]
-v1 = StartPosition[5]
-vi = StartPosition[6]
-v01 = StartPosition[7]
-t1 = StartPosition[8]
-t2 = StartPosition[9]
+vi = StartPosition[4]
+v01 = StartPosition[5]
+v02 = StartPosition[6]
+t1 = StartPosition[7]
+t2 = StartPosition[8]
+I01 = StartPosition[9]
+I02 = StartPosition[10]
+v11 = StartPosition[11]
+v12 = StartPosition[12]
     
 S = ["g",0]
 # S = ["d",1]
@@ -468,57 +540,18 @@ elif sea_level_data=='Rohling':
     time_sea = time_sea.to_numpy()
     sea = sea.to_numpy()
 
-elif sea_level_data=='Clark-d18Osw' or sea_level_data=='Clark-SL':
-    data_sea = pd.read_excel('../Data/Clark_2025_d180sw.xlsx', sheet_name='d18Osw')
+elif sea_level_data=='Clark':
+    data_sea = pd.read_excel('../Data/Clark_2025_GMSL.xlsx')
     time_sea = 1e3*data_sea.loc[:, 'Age (Ma)'].to_numpy()
-    sea = data_sea.loc[:, 'd18Osw (per mil)'].to_numpy()
+    sea = -1*data_sea.loc[:, 'Sea level (m)'].to_numpy()
     
     mask_interval = np.where(np.logical_and(-time_sea>=start_year, 
                                             -time_sea<=0))
     time_sea = time_sea[mask_interval][::-1]  # reverse array, s.t. it starts from oldest age
     sea = sea[mask_interval][::-1]
-    
-    # transform d18Osw into SL: approximation by Clark et al. (2025)
-    if sea_level_data=='Clark-SL':
-        sea = sea/0.008
-    
-elif sea_level_data=='Clark-probstack':
-    data_sea = pd.read_excel('../Data/Clark_2025_d180sw.xlsx', sheet_name='Prob stack with trend removed')
-    time_sea = 1e3*data_sea.loc[:, 'Age (Ma)'].to_numpy()
-    sea = data_sea.loc[:, 'Prob stack with 0.083 trend removed (per mil)'].to_numpy()
-    
-    mask_interval = np.where(np.logical_and(-time_sea>=start_year, 
-                                            -time_sea<=0))
-    time_sea = time_sea[mask_interval][::-1]  # reverse array, s.t. it starts from oldest age
-    sea = sea[mask_interval][::-1]
-    
 
 else:
-    raise ValueError("sea_level_data must be 'Berends', 'Rohling', 'Clark-d18Osw', 'Clark-SL' or 'Clark-probstack'!")
-
-
-# scales d18O data to Berends SL:
-# Procedure: 1. Normalise d18O record
-#            2. Multiply by stdev of Berends and add mean
-if scale_to_berends:
-    # 1. Load Berends and then scale Clark d180b to SL of Berends
-    data_sea_berends = np.loadtxt('../Data/Berends_etal_2020_CP_supplement.dat', skiprows=10)
-    time_sea_berends = data_sea_berends[:,0]
-    mask_interval_berends = np.where(np.logical_and(time_sea_berends>=start_year, 
-                                            time_sea_berends<=0))
-    time_sea_berends = -1*time_sea_berends[mask_interval_berends]
-    sea_berends = -1*data_sea_berends[:,1][mask_interval_berends]   
-    
-    # 2. Normalise d18O record
-    sea_norm = (sea-np.mean(sea))/np.std(sea)
-    
-    # 3. Multiply by Berends stdev and add Berends mean
-    sea_scaled = sea_norm*np.std(sea_berends)+np.mean(sea_berends)
-    
-    # store unscaled d180 record
-    sea_unscaled = sea
-    
-    sea = sea_scaled
+    raise ValueError("sea_level_data must be 'Berends', 'Rohling', or 'Clark'!")
 
 
 # Load orbital data from Laska
@@ -559,20 +592,6 @@ icevolume = modelledVolume(start_year, future_time, vi, time_steps)
 time_bounds, v0s, v0_bounds, v1s, v1_bounds = calc_bounds(time_steps, icevolume)
 
 
-if scale_to_berends:
-    icevolume_scaled = icevolume
-    # re-scale to d18O
-    icevolume = (icevolume-np.mean(sea_berends))/np.std(sea_berends) * np.std(sea_unscaled) + np.mean(sea_unscaled)
-    
-    v0s_scaled = v0s
-    v0s = (v0s-np.mean(sea_berends))/np.std(sea_berends) * np.std(sea_unscaled) + np.mean(sea_unscaled)
-    sea = sea_unscaled
-    
-    v0_bounds = (v0_bounds-np.mean(sea_berends))/np.std(sea_berends) * np.std(sea_unscaled) + np.mean(sea_unscaled)
-    v1s = (v1s-np.mean(sea_berends))/np.std(sea_berends) * np.std(sea_unscaled) + np.mean(sea_unscaled)
-    v1_bounds = (v1_bounds-np.mean(sea_berends))/np.std(sea_berends) * np.std(sea_unscaled) + np.mean(sea_unscaled)
-   
-
 #calcul de l'écart modele donnees a chaque pas de temps
 residuals = []
 sum_residuals = 0
@@ -589,11 +608,11 @@ for i in range (len(sea)):
 step = (future_time-start_year)/time_steps
 
 # index to the left of ramp start (t1)
-pre_ramp = int(np.floor(-start_year-t1) / step)
+pre_ramp = int(np.floor(-start_year+t1) / step)
 print(f'Time of Ramp start: {time[pre_ramp]}')
 
 # index to the left of ramp start (2)
-post_ramp = int(np.floor(-start_year-t2) / step)
+post_ramp = int(np.floor(-start_year+t2) / step)
 print(f'Time of Ramp end: {time[post_ramp]}')
 
 ice_pre_ramp = icevolume[:pre_ramp+1]
@@ -723,17 +742,11 @@ if sea_level_data=='Berends':
 elif sea_level_data=='Rohling':
     label='Rohling'
     ylabel='Ice volume (m sl)'
-elif sea_level_data=='Clark-probstack':
-    label=r'Clark δ$^{18}$O$_b$'
-    ylabel=r'δ$^{18}$O$_b$ (‰)'
-elif sea_level_data=='Clark-d18Osw':
-    label=r'Clark δ$^{18}$O$_{sw}$'
-    ylabel=r'δ$^{18}$O$_{sw}$ (‰)'
-elif sea_level_data=='Clark-SL':
-    label=r'Clark SL'
+elif sea_level_data=='Clark':
+    label=r'Clark'
     ylabel='Ice volume (m sl)'
 else:
-    raise ValueError("Sea level data must be one of: 'Berends', 'Rohling', 'Clark-probstack', 'Clark-d18Osw', or 'Clark-SL'!")
+    raise ValueError("Sea level data must be one of: 'Berends', 'Rohling' or 'Clark'!")
      
      
 fig, ax1 = plt.subplots(figsize=(20,6))
@@ -746,12 +759,12 @@ if gap!=None:
 
 ax1.plot(time_bounds, v0s, linestyle="--" , color=bright.black, label=r"Deglaciation threshold: $v_0(t)$")
     
-plt.vlines(x=t1, ymin=np.min([np.min(icevolume-0.1*np.abs(icevolume)), np.min(sea-0.1*np.abs(sea))]), 
+plt.vlines(x=-t1, ymin=np.min([np.min(icevolume-0.1*np.abs(icevolume)), np.min(sea-0.1*np.abs(sea))]), 
                  ymax=np.max([np.max(icevolume+0.1*np.abs(icevolume)), np.max(sea+0.1*np.abs(sea))]), 
-                 linestyle='-', color=bright.green, label=f'Start of RAMP: t1={int(t1)} kyr')
-plt.vlines(x=t2, ymin=np.min([np.min(icevolume-0.1*np.abs(icevolume)), np.min(sea-0.1*np.abs(sea))]), 
+                 linestyle='-', color=bright.green, label=f'Start of RAMP: t1={int(-t1)} ka')
+plt.vlines(x=-t2, ymin=np.min([np.min(icevolume-0.1*np.abs(icevolume)), np.min(sea-0.1*np.abs(sea))]), 
                  ymax=np.max([np.max(icevolume+0.1*np.abs(icevolume)), np.max(sea+0.1*np.abs(sea))]), 
-                 linestyle='-', color=bright.green, label=f'End of RAMP: t2={int(t2)} kyr')
+                 linestyle='-', color=bright.green, label=f'End of RAMP: t2={int(-t2)} ka')
 
 ax2 = ax1.twinx()
 ax2.plot(time, state, linewidth = 0.8, color=bright.grey, label='Model state')
@@ -772,8 +785,114 @@ ax2.set_ylabel('Model state')
 fig.legend(ncol=3, loc=8)
 if title!=None:
     plt.title(title+f';  RMSE={rmse:.2f} m;  R={R_value:.2f}', fontsize=18)
+# plt.savefig('../Data/RAMP-2.png', dpi=500, bbox_inches='tight')
 plt.show()
 
+
+
+# ###############################################################################
+# # 2ND PLOT: Periodogram
+# fig, ax = plt.subplots(ncols=1, nrows=3, figsize=(12,10), dpi=300)
+# fig.tight_layout(pad=5.0)
+
+
+# ax[0].plot(f_sea_pre_ramp, Power_sea_pre_ramp, linestyle='--', color=bright.blue, label="Berends")
+# ax[0].plot(f_ice_pre_ramp, Power_ice_pre_ramp, color=bright.purple, label="Model")
+# # mark obliquity and precession cycles + 100 kyr
+# ax[0].vlines([1/100, 1/41, 1/23], 0, np.max([np.max(Power_sea_pre_ramp), np.max(Power_ice_pre_ramp)])+10, color='grey', linestyle='--')
+# ax[0].set_ylim(0,np.max([np.max(Power_sea_pre_ramp), np.max(Power_ice_pre_ramp)])+10)
+# ax[0].set_xlim([1/500,0.05])
+
+# ax[1].plot(f_sea_ramp, Power_sea_ramp, linestyle='--', color=bright.blue, label="Berends")
+# ax[1].plot(f_ice_ramp, Power_ice_ramp, color=bright.purple, label="Model")
+# # mark obliquity and precession cycles + 100 kyr
+# ax[1].vlines([1/100, 1/41, 1/23], 0, np.max([np.max(Power_sea_ramp), np.max(Power_ice_ramp)])+10, color='grey', linestyle='--')
+# ax[1].set_ylim(0,np.max([np.max(Power_sea_ramp), np.max(Power_ice_ramp)])+10)
+# ax[1].set_xlim([1/500,0.05])
+
+# ax[2].plot(f_sea_post_ramp, Power_sea_post_ramp, linestyle='--', color=bright.blue, label="Berends")
+# ax[2].plot(f_ice_post_ramp, Power_ice_post_ramp, color=bright.purple, label="Model")
+# # mark obliquity and precession cycles + 100 kyr
+# ax[2].vlines([1/100, 1/41, 1/23], 0, np.max([np.max(Power_sea_post_ramp), np.max(Power_ice_post_ramp)])+10, color='grey', linestyle='--')
+# ax[2].set_ylim(0,np.max([np.max(Power_sea_post_ramp), np.max(Power_ice_post_ramp)])+10)
+# ax[2].set_xlim([1/500,0.05])
+
+
+# ax[2].set_xlabel("Frequency [1/kyr]", weight='bold')
+# ax[1].set_ylabel(r"Squared magnitude spectrum [$m^2$]",weight='bold')
+
+
+# # ax[0].plot(1/f_sea_pre_ramp, Power_sea_pre_ramp, linestyle='--', color=bright.blue, label="Berends")
+# # ax[0].plot(1/f_ice_pre_ramp, Power_ice_pre_ramp, color=bright.purple, label="Model")
+# # ax[1].plot(1/f_sea_ramp, Power_sea_ramp, linestyle='--', color=bright.blue, label="Berends")
+# # ax[1].plot(1/f_ice_ramp, Power_ice_ramp, color=bright.purple, label="Model")
+# # ax[2].plot(1/f_sea_post_ramp, Power_sea_post_ramp, linestyle='--', color=bright.blue, label="Berends")
+# # ax[2].plot(1/f_ice_post_ramp, Power_ice_post_ramp, color=bright.purple, label="Model")
+# # ax[2].set_xlabel("Periodicity [kyr]", weight='bold')
+# # ax[0].set_xlim([0,200])
+# # ax[1].set_xlim([0,200])
+# # ax[2].set_xlim([0,200])
+
+
+# for i in range(3):
+#     ax[i].text(0.09, 0.8, '100 kyr', color='grey', rotation=0, transform=ax[i].transAxes)
+#     ax[i].text(0.4, 0.8, '41 kyr', color='grey', rotation=0, transform=ax[i].transAxes)
+#     ax[i].text(0.8, 0.8, '23 kyr', color='grey', rotation=0, transform=ax[i].transAxes)
+
+# ax[0].legend()
+# ax[1].legend()
+# ax[2].legend()
+# ax[0].set_title(f'Pre RAMP ({-start_year*1e-3:.1f}-{time[pre_ramp]*1e-3:.1f} Myr BP)')
+# ax[1].set_title(f'During RAMP ({time[pre_ramp]*1e-3:.1f} - {time[post_ramp]*1e-3:.1f} Myr BP)')
+# ax[2].set_title(f'Post MPT ({time[post_ramp]*1e-3:.1f}-0 Myr BP)')
+
+# # if title!=None:
+# #     plt.title(title, fontsize=25)
+# # plt.savefig('../Data/RAMP-2_periodogram.png', dpi=300)
+# plt.show()
+
+
+# ###############################################################################
+# # 2ND PLOT: Periodogram (Alternative with only 2 subplots)
+# fig, ax = plt.subplots(ncols=1, nrows=2, figsize=(12,6), dpi=300)
+# fig.tight_layout(pad=5.0)
+
+
+# ax[0].plot(f_sea_pre_split, Power_sea_pre_split, linestyle='--', color=bright.blue, label="Berends")
+# ax[0].plot(f_ice_pre_split, Power_ice_pre_split, color=bright.purple, label="Model")
+# # mark obliquity and precession cycles + 100 kyr
+# ax[0].vlines([1/100, 1/41, 1/23], 0, np.max([np.max(Power_sea_pre_split), np.max(Power_ice_pre_split)])+10, color='grey', linestyle='--')
+# ax[0].set_ylim(0,np.max([np.max(Power_sea_pre_split), np.max(Power_ice_pre_split)])+10)
+# ax[0].set_xlim([1/500,0.05])
+
+# ax[1].plot(f_sea_post_split, Power_sea_post_split, linestyle='--', color=bright.blue, label="Berends")
+# ax[1].plot(f_ice_post_split, Power_ice_post_split, color=bright.purple, label="Model")
+# # mark obliquity and precession cycles + 100 kyr
+# ax[1].vlines([1/100, 1/41, 1/23], 0, np.max([np.max(Power_sea_post_split), np.max(Power_ice_post_split)])+10, color='grey', linestyle='--')
+# ax[1].set_ylim(0,np.max([np.max(Power_sea_post_split), np.max(Power_ice_post_split)])+10)
+# ax[1].set_xlim([1/500,0.05])
+
+
+# ax[1].set_xlabel("Frequency [1/kyr]", weight='bold')
+# # Add a common y-axis label
+# fig.text(0.04, 0.5, r"Squared magnitude spectrum [$m^2$]", weight='bold', va='center', rotation='vertical')
+
+
+
+# for i in range(2):
+#     ax[i].text(0.09, 0.8, '100 kyr', color='grey', rotation=0, transform=ax[i].transAxes)
+#     ax[i].text(0.4, 0.8, '41 kyr', color='grey', rotation=0, transform=ax[i].transAxes)
+#     ax[i].text(0.8, 0.8, '23 kyr', color='grey', rotation=0, transform=ax[i].transAxes)
+
+# ax[0].legend()
+# ax[1].legend()
+# ax[0].set_title(f'{-start_year*1e-3:.1f}-{time[pre_split]*1e-3:.1f} Myr BP')
+# ax[1].set_title(f'{time[pre_split]*1e-3:.1f}-0 Myr BP')
+
+# # if title!=None:
+# #     plt.title(title, fontsize=25)
+# # plt.savefig('../Data/RAMP-2_periodogram.png', dpi=300)
+# plt.show()
 
 
 ###############################################################################
@@ -815,28 +934,28 @@ ax[1].set_title(f'{time[pre_split]*1e-3:.1f}-0 Myr BP')
 
 # if title!=None:
 #     plt.title(title, fontsize=25)
-# plt.savefig('/home/pollakf/Desktop/RAMP5_periodogram.png', dpi=300)
+# plt.savefig('../Data/RAMP-2_periodogram.png', dpi=300)
 plt.show()
 
 
-# ###############################################################################
-# # 3RD PLOT: Pyleoclim scalogram
+###############################################################################
+# 3RD PLOT: Pyleoclim scalogram
 
-# # IEVOLUME
-# ts_icevolume = pyleo.Series(time=time, value=icevolume, 
-#                             time_name='Age', time_unit='ka', 
-#                             value_name='Icevolume', value_unit='m Sl', 
-#                             verbose=False)
-# psd_icevolume = ts_icevolume.spectral()
-# scal_sig_ar1asym_icevolume = ts_icevolume.wavelet(freq_kwargs={'fmin':1/500,'fmax':1/10,'nf':50}).signif_test(method='ar1asym')
+# IEVOLUME
+ts_icevolume = pyleo.Series(time=time, value=icevolume, 
+                            time_name='Age', time_unit='ka', 
+                            value_name='Icevolume', value_unit='m Sl', 
+                            verbose=False)
+psd_icevolume = ts_icevolume.spectral()
+scal_sig_ar1asym_icevolume = ts_icevolume.wavelet(freq_kwargs={'fmin':1/500,'fmax':1/10,'nf':50}).signif_test(method='ar1asym')
 
-# # fig, ax = ts_icevolume.summary_plot(psd_icevolume.beta_est(), scal_sig_ar1asym_icevolume, figsize=(20,8))
-# fig, ax = scal_sig_ar1asym_icevolume.plot(figsize=(20,8))
-# plt.xticks(np.hstack([-future_time, np.arange(0, -start_year+1, 200)]))
-# plt.hlines(y=[23, 41, 100], xmin=-future_time, xmax=-start_year, colors='red', linestyles='--', label='Orbital frequencies')
-# plt.vlines(0, 10, 500, colors='grey', linestyles='--', linewidth=3)
-# plt.ylabel('Period (ka)')
-# plt.show()
+# fig, ax = ts_icevolume.summary_plot(psd_icevolume.beta_est(), scal_sig_ar1asym_icevolume, figsize=(20,8))
+fig, ax = scal_sig_ar1asym_icevolume.plot(figsize=(20,8))
+plt.xticks(np.hstack([-future_time, np.arange(0, -start_year+1, 200)]))
+plt.hlines(y=[23, 41, 100], xmin=-future_time, xmax=-start_year, colors='red', linestyles='--', label='Orbital frequencies')
+plt.vlines(0, 10, 500, colors='grey', linestyles='--', linewidth=3)
+plt.ylabel('Period (ka)')
+plt.show()
 
 
 # # SEA DATA
@@ -852,6 +971,133 @@ plt.show()
 # coh_sig.dashboard()
 # plt.show()
 
+# # ###############################################################################
+# # # 3Rd PLOT: Insolation
+# Esi = np.array(Esi[::2])
+# EnO = np.array(EnO[::2])
+# I = aEsi*Esi + aO*EnO
+# threshold = icevolume*I
+
+# plt.figure(figsize=(20,6))
+# plt.plot(time, I, label='I')
+# plt.plot(time, threshold, label='Threshold')
+# plt.plot(time_bounds, v0_bounds, label='v0 bounds')
+# plt.plot(time_bounds, v0s, label='v0s')
+# plt.plot(time_bounds, v1s, label='v1s')
+# plt.legend()
+# plt.gca().invert_yaxis()
+# plt.gca().invert_xaxis()
+# plt.show()
+
+# # ###############################################################################
+# # 4th PLOT: Precession and Obliquity
+# fig, ax1 = plt.subplots(figsize=(20,6))
+# plt.plot(time[-300:-250], Esi[-300:-250], color='blue', label='Esi')
+# ax1.legend(loc=1)
+# ax1.invert_xaxis()
+
+# ax2 = plt.twinx(ax1)
+# ax2.plot(time[-300:-250], EnO[-300:-250], color='orange', label='Obliquity')
+# ax2.legend()
+# ax2.invert_xaxis()
+# ax2.hlines(y=0, xmin=0, xmax=50, linestyle='--', color='grey')
+
+# plt.xlim(0, 50)
+# plt.show()
+
+
+# ###############################################################################
+# # 3Rd PLOT: Spectrogram
+# fig, ax = plt.subplots(ncols=1, nrows=2, figsize=(10,8), dpi=300)
+# fig.tight_layout(pad=5.0)
+# ax[0].pcolormesh(t_sea_spectrogram, f_sea_spectrogram, spectrogram_sea, shading='gouraud') 
+# ax[1].pcolormesh(t_ice_spectrogram, f_ice_spectrogram, spectrogram_ice, shading='gouraud')
+
+# ax[0].set_ylabel('Frequency [1/kyr]')
+# ax[1].set_ylabel('Frequency [1/kyr]')
+# ax[1].set_xlabel('Years BP [kyr]')
+
+# ax[0].set_ylim([0,0.05])
+# ax[1].set_ylim([0,0.05])
+
+# plt.setp(ax, xticks=[1600, 1400, 1200, 1000, 800, 600, 400, 200], xticklabels=['400', '600', '800', '1000', '1200', '1400', '1600', '1800'])
+
+# ax[0].set_title('Berends Spectrogram')
+# ax[1].set_title('Model Spectrogram')
+
+# if title!=None:
+#     plt.title(title, fontsize=25)
+# # plt.savefig('../Data/RAMP-2_spectrogram.png', dpi=300)
+# plt.show()
+
+
+###############################################################################
+# # 4TH PLOT: Comparison model-data for the best fit StartPosition
+# fig, ax1 = plt.subplots(figsize=(20,4), dpi=300)
+# ax1.plot(time, sea, linestyle="--" , color=bright.blue, label="Data")
+# ax1.plot(time, icevolume, color=bright.purple, label="Model")
+# ax1.plot(time_bounds, v0_bounds, color=bright.grey, label="Deglaciation threshold")
+# ax1.plot(time_bounds, v0s, color=bright.grey, linestyle='--', label="v0")
+# ax1.plot(time_bounds, v1_bounds, color=bright.black, alpha=.5, label="v1 bounds")
+# ax1.axhline(v1, 0, 2000, linestyle='--', color=bright.black, alpha=.5, label="v1")
+# ax1.invert_yaxis()
+
+# ax2 = ax1.twinx()
+# ax2.plot(time, state, linewidth = 0.8, color=bright.grey, label='Model state')
+
+# plt.xticks([0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000])
+# ax2.set_yticks([1,0])
+
+# ax1.set_yticks([0,20,40,60,80,100,120])
+# plt.xlim(2000,0)
+
+# ax1.set_xlabel("Age (ka)",weight='bold')
+# ax1.set_ylabel("Ice volume (m sl)",weight='bold')
+# fig.legend()
+# if title!=None:
+#     plt.title(title, fontsize=25)
+# plt.savefig(f'../Data/test2.png', dpi=300)
+# plt.show()
+
+###############################################################################
+
+# #state of the model for the best fit StartPosition
+# plt.figure(figsize=(20,4), dpi=300)
+# plt.plot(time, state, "0.75", linewidth = 0.8, color=bright.black)
+# plt.xticks([0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000])
+# plt.xlim(0,2000)
+# plt.yticks([0,1])
+# plt.xlabel("Age (ka)",weight='bold')
+# plt.ylabel("g or d (d=1, g=0)",weight='bold')
+# plt.xlim(2000,0)
+# plt.show()
+
+
+# ###############################################################################
+# # 5th Plot: residuals (model-data) for the best fit StartPosition
+# boundary = 20
+
+# plt.figure(figsize=(20,4), dpi=300)
+# plt.plot(time_sea, residuals, color=bright.green, label="Model")
+# plt.hlines(0, -start_year, -future_time-1, color='grey')
+# plt.hlines(boundary, -start_year, 0, linestyle='--', color='grey')
+# plt.hlines(-boundary, -start_year, 0, linestyle='--', color='grey')
+
+# plt.fill_between(time_sea, residuals, boundary, where=(np.array(residuals) >= boundary), color='red', alpha=0.3)
+# plt.fill_between(time_sea, residuals, -boundary, where=(np.array(residuals) <= -boundary), color='blue', alpha=0.3)
+
+# plt.xticks(np.arange(-start_year, -1, -200))
+# plt.yticks([boundary, 0, -boundary])
+
+
+# plt.xlim(-start_year, 0)
+# # plt.ylim(-50, 50)
+# # plt.gca().invert_xaxis()
+# # plt.gca().invert_yaxis()
+
+# plt.xlabel("Age (ka)",weight='bold')
+# plt.ylabel('Residuals (model-data)(msl)',weight='bold')
+# plt.show()
 
 ###############################################################################
 # Save data to binary file
@@ -877,7 +1123,6 @@ if save_data!=None:
             'time_bounds': time_bounds,
             'StartPosition': StartPosition, 
             'v01': v01, 
-            'v1': v1,
             't1': t1, 
             't2': t2, 
             'taud': taud, 
@@ -923,8 +1168,6 @@ if save_data!=None:
             'O': O
             }
     
-    if scale_to_berends:
-        data['icevolume_scaled'] = icevolume_scaled
     if gap!=None:
         data['gap'] = gap
     
