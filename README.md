@@ -26,3 +26,10 @@ for the Mid-Pleistocene Transition_" (Pollak et al. 2025). It also includes all 
    - contains the conda environment used to run all the code
    - **Note**: not all packages are necessary, but this is my default environment, that's why there are many additional packages
    - **Usage**: you can create a new conda environment from this by using `conda env create -f environment.yml` 
+
+# Citation
+If you use this code, please cite:
+
+Pollak et al. (2026). *felyx04/Conceptual-Model-Pollak-et-al-2025*. Zenodo. https://doi.org/10.5281/zenodo.17189824
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17189824.svg)](https://doi.org/10.5281/zenodo.17189824)
