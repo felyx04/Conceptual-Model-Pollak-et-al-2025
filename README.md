@@ -1,6 +1,5 @@
 # Conceptual-Model-Pollak-et-al-2025
-This repository contains all the source code of the models used in "_A new conceptual model reveals a long ramp-like change as cause
-for the Mid-Pleistocene Transition_" (Pollak et al. 2025). It also includes all the code and data to generate the figures in this paper.
+This repository contains all the source code of the models used in "_Simulating global ice volume across the Mid-Pleistocene Transition with a ramp-like increase in the deglaciation threshold_" (Pollak et al. 2026, https://doi.org/10.5194/cp-22-675-2026). It also includes all the code and data to generate the figures in this paper.
 
 # Structure 
 1. **Figures**
